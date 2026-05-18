@@ -1,0 +1,32 @@
+name: 微博粉丝自动抓取
+on:
+  push:
+  schedule:
+    - cron: '0 */2 * * *'  # 每2小时自动爬一次
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 运行爬虫
+        run: python weibo_fans.py
+
+      - name: 提交更新
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "自动更新粉丝数据"
+          git push
