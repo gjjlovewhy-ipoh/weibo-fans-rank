@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>张婧仪 周也 孙怡 微博粉丝实时对比</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,微软雅黑;}
+        body{background:#f0f2f5;padding:40px 15px;}
+        .box{max-width:520px;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 4px 20px #00000015;padding:30px;}
+        h1{text-align:center;color:#222;margin-bottom:30px;font-size:22px;}
+        .item{display:flex;align-items:center;justify-content:space-between;padding:18px 10px;border-bottom:1px solid #eee;font-size:17px;}
+        .rank{font-weight:bold;color:#e53e3e;width:50px;}
+        .star{flex:1}
+        .num{color:#1874cd;font-weight:bold;}
+        .tip{text-align:center;margin-top:25px;color:#888;font-size:14px;}
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>微博粉丝数实时排名</h1>
+        <div id="list"></div>
+        <div class="tip">最后更新：<span id="upTime"></span><br>每30秒自动刷新 · 云端定时抓取</div>
+    </div>
+
+    <script>
+        // 30秒刷新一次
+        setInterval(loadData, 30000);
+        loadData();
+
+        function parseNum(s){
+            if(s.includes("千万")) return parseFloat(s)*10000000;
+            if(s.includes("万")) return parseFloat(s)*10000;
+            return parseFloat(s)||0;
+        }
+
+        async function loadData(){
+            try{
+                let res = await fetch("fans_data.json?t="+Date.now());
+                let arr = await res.json();
+                // 降序排名
+                arr.sort((a,b)=>parseNum(b.fans)-parseNum(a.fans));
+                let html = "";
+                arr.forEach((item,i)=>{
+                    html += `
+                    <div class="item">
+                        <span class="rank">第${i+1}名</span>
+                        <span class="star">${item.name}</span>
+                        <span class="num">${item.fans}</span>
+                    </div>
+                    `;
+                });
+                document.getElementById("list").innerHTML = html;
+                document.getElementById("upTime").innerText = new Date().toLocaleString();
+            }catch(e){
+                document.getElementById("list").innerHTML = "<div class='item'>数据加载失败</div>";
+            }
+        }
+    </script>
+</body>
+</html>
